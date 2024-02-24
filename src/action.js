@@ -19,7 +19,7 @@ export const deleteItem=(itemName)=>{
 }
 
 
-export const updateItem=(item)=>({
+export const updatedItem=(item)=>({
    type:"UPDATE_ITEM",
    payload:item,
 })

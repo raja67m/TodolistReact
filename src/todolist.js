@@ -1,6 +1,8 @@
 import React from "react";
 import "./todolist.css";
 import { connect } from "react-redux";
+import { deleteItem,updatedItem,addItem} from "./action";
+import { v4 as uuidv4 } from 'uuid';
 class TodoList extends React.Component{
 
   constructor(props){
@@ -8,22 +10,71 @@ class TodoList extends React.Component{
     this.state={
       showNewListPopup:false,
       showEditPopup:false,
-      showDeletePopup:false
+      showDeletePopup:false,
+      selectedItem:null,
+      newTask:"",
     }
   }
 
+//added new task
+
+
+handleAddItem=()=>{
+  const {newTask}=this.state;
+
+  if(newTask){
+    const newItem={
+      id: uuidv4(), 
+      task:newTask,
+     
+    };
+this.props.addItem(newItem);
+this.setState({
+  newTask:"",
+  showNewListPopup:false
+ 
+});
+  }}
+
+
+
 //handleEditPopup
-handleEditPopup=()=>{
+handleEditPopup=(item)=>{
   this.setState({
-    showEditPopup:true
+    showEditPopup:true,
+    selectedItem:item,
+    newTask:item.task
   })
 }  
+//handleUpdateFunction
+handleUpdated=()=>{
+  const{selectedItem,newTask}=this.state;
+  const updatedItem={
+    ...selectedItem,
+    task:newTask || selectedItem.task
+  };
+  this.props.updatedItem(updatedItem);
+  this.handleCancle();
+}
+
 
 //handleDeletePopup
-handleDeletePopup=()=>{
+handleDeletePopup=(item)=>{
   this.setState({
-    showDeletePopup:true
+    showDeletePopup:true,
+    itemToDelete:item
+
   })
+}
+
+//handleDeletefunction
+
+handleDeleteFunction=()=>{
+  const {itemToDelete}=this.state;
+  if(itemToDelete){
+    this.props.deleteItem(itemToDelete);
+    this.handleCancle();
+  }
 }
 
 //handleclicknewlsist
@@ -32,6 +83,12 @@ handleDeletePopup=()=>{
       showNewListPopup:true
     })
   }
+
+//handleInputChange
+handleInputChange = (e) => {
+  this.setState({ [e.target.name]: e.target.value });
+};
+
   //handleCacleNewllist
   handleCancle=()=>{
     this.setState({
@@ -51,26 +108,33 @@ handleDeletePopup=()=>{
       <button className="New-list" onClick={this.handleClickNewlist}>New List</button>
 
         
-      <p>Created Date & time</p>
+    
 
       
-       <div className="todolist">
+       <div className="todolist-container">
       
        {
         this.props.items.map((item)=>(
+          <div className="todolist">
+           
+
           <button  key={item.id} className="task-button">{item.task
           }</button>
+
+       
+
+          <button className="edit" onClick={()=>this.handleEditPopup(item)}>Edit</button>
+          <button className="delete" onClick={()=>this.handleDeletePopup(item)}>Delete</button>
+          <button className="completed">Completed</button>
+                 
+          </div>
 
         ))
       }
 
-        <div className="other-buttons">
+<div className="other-buttons">
 
-       <button className="edit" onClick={this.handleEditPopup}>Edit</button>
-       <button className="delete" onClick={this.handleDeletePopup}>Delete</button>
-       <button className="completed">Completed</button>
-      </div>
-      
+</div>
     
        </div>
 
@@ -83,9 +147,9 @@ handleDeletePopup=()=>{
 
  
   <h4>add new task</h4>
- <input type="text" className="addNewTask"/>
+ <input type="text" className="addNewTask" name="newTask"  value={this.state.newTask} onChange={this.handleInputChange} />
 <div className="popup-button">
-<button className="add">Add</button>
+<button className="add" onClick={this.handleAddItem}>Add</button>
 <button className="cancel" onClick={this.handleCancle}>Cancel</button>
 </div>
 </div>
@@ -104,7 +168,8 @@ showEditPopup &&(
     <div className="Popup-content">
       <h4>Edit Task</h4>
     <div className="popup-button">
-<button className="yes">yes</button>
+      <input type="text" name="newTask"   value={this.state.newTask} onChange={this.handleInputChange}/>
+<button className="yes" onClick={this.handleUpdated}>yes</button>
 <button className="cancel" onClick={this.handleCancle}>Cancel</button>
 </div>
 
@@ -124,7 +189,7 @@ showDeletePopup &&(
     <div className="Popup-content">
       <h4>Are sure you want delete?</h4>
     <div className="popup-button">
-<button className="yes">yes</button>
+<button className="yes" onClick={this.handleDeleteFunction}>yes</button>
 <button className="cancel" onClick={this.handleCancle}>Cancel</button>
 </div>
 
@@ -151,4 +216,11 @@ const mapStateToProps = (state) => ({
   items: state.items,
 });
 
-export default connect(mapStateToProps)(TodoList);
+const mapDispatchToProps=(dispatch)=>({
+  deleteItem:(itemName)=>dispatch(deleteItem(itemName)),
+  updatedItem:(item)=>dispatch(updatedItem(item)),
+  addItem:(item)=>dispatch(addItem(item))
+})
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(TodoList);
