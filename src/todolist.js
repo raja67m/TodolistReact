@@ -13,6 +13,7 @@ class TodoList extends React.Component{
       showDeletePopup:false,
       selectedItem:null,
       newTask:"",
+      completedTasks: {},
     }
   }
 
@@ -26,6 +27,7 @@ handleAddItem=()=>{
     const newItem={
       id: uuidv4(), 
       task:newTask,
+      createdAt: new Date().toLocaleString(),
      
     };
 this.props.addItem(newItem);
@@ -89,6 +91,16 @@ handleInputChange = (e) => {
   this.setState({ [e.target.name]: e.target.value });
 };
 
+//task completed function
+handleCompleted = (itemId) => {
+  this.setState((prevState) => ({
+    completedTasks: {
+      ...prevState.completedTasks,
+      [itemId]: !prevState.completedTasks[itemId], // Toggle completed state
+    },
+  }));
+};
+
   //handleCacleNewllist
   handleCancle=()=>{
     this.setState({
@@ -117,15 +129,20 @@ handleInputChange = (e) => {
         this.props.items.map((item)=>(
           <div className="todolist">
            
+           <p>Created At: {item.createdAt}</p>
 
-          <button  key={item.id} className="task-button">{item.task
+          <button  key={item.id} className="task-button"   style={{
+                    textDecoration: this.state.completedTasks[item.id]
+                      ? "line-through"
+                      : "none",
+                  }}>{item.task
           }</button>
 
        
 
           <button className="edit" onClick={()=>this.handleEditPopup(item)}>Edit</button>
           <button className="delete" onClick={()=>this.handleDeletePopup(item)}>Delete</button>
-          <button className="completed">Completed</button>
+          <button className="completed"  onClick={() => this.handleCompleted(item.id)}>Completed</button>
                  
           </div>
 
@@ -167,8 +184,9 @@ showEditPopup &&(
   <div className="Popup">
     <div className="Popup-content">
       <h4>Edit Task</h4>
+      <input type="text" className="addNewTask"  value={this.state.newTask} onChange={this.handleInputChange}/>
     <div className="popup-button">
-      <input type="text" name="newTask"   value={this.state.newTask} onChange={this.handleInputChange}/>
+     
 <button className="yes" onClick={this.handleUpdated}>yes</button>
 <button className="cancel" onClick={this.handleCancle}>Cancel</button>
 </div>

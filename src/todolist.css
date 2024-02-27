@@ -26,6 +26,8 @@ p{
    font-size: 13px;
    color: gray;
    text-align: center;
+
+  
 }
 .todolist-container{
    display: flex;
